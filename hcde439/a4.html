@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Jennifer Duong's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1> Jennifer's Assignment 3</h1>
+    <div class="header">
+
+    </div>
+
+      <h2> Schematics </h2>
+      <p>I began my assignment by first drawing out schematics before 
+      starting on my circuit. </p>
+      <img src="libSchematic.png" />
+      <p><em> Pin 4 is my sending pin, and pin 2 is my recieving pin. I chose a 
+        1 megaohm resistor for my circuit because a higher resistor value 
+        would have imcreased the sensitivity of touch, and therefore can enable the circuit
+        to be noise sensitive as well. My circuit is dependent on human touching, so 
+        I chose a 1 megaohm resistor because it provides a good balance between sensitivity 
+        and noise. 
+      </em></p>
+
+      <h2> Circuit </h2>
+      <p> This was how I built my circuit: </p>
+        <img src="libCircuit.png" />
+      <p><em> As seen above, I used my metal keys for capacitive sensing. </em></p>
+
+      <h2> Firmware Code </h2>
+      <p> Below is the code I created to run my circuit: </p>
+      <pre><code>
+            #include <CapacitiveSensor.h> // CapacitiveSensor library
+            #include <Servo.h> // Servo library
+            
+            
+            // Pin 2 is receiving pin, pin 4 is sending pin
+            // 1 megohm resistor between pins 4 & 2 
+            CapacitiveSensor   cs_4_2 = CapacitiveSensor(4,2);  
+            
+            Servo myServo;  // create a servo object
+            
+            
+            void setup() {
+               cs_4_2.set_CS_AutocaL_Millis(0xFFFFFFFF); 	// turn off autocalibrate on channel 1
+               Serial.begin(9600);
+               myServo.attach(9); // attach servo motor to pin 9 
+            }
+            
+            void loop()               	 
+            {
+                long start = millis(); // current time in millisecond
+                long total1 =  cs_4_2.capacitiveSensor(30); // read capacitives sensor value 
+            
+                Serial.print(millis() - start);    	// check on performance in milliseconds
+                Serial.print("\t");                	// tab character for spacing in serial monitor
+            
+                Serial.println(total1);            	// print the capacitive sensors raw output value 
+                delay(10);                         	// delay to limit data to serial port
+            
+            
+              // if the capacitive sensor detects a touch value above 1000
+              // (aka, when it is touched)
+              if (total1 > 1000) {
+            
+                  myServo.write(45); // move servo to 45 degrees
+                  delay(200); // wait 200 ms for the servo to get there
+            
+                  myServo.write(90); // move servo to 90 degrees
+                  delay(200); // wait 200 ms for the servo to get there
+            
+                  myServo.write(135); // move servo to 135 degrees
+                  delay(200); // wait 200 ms for the servo to get there
+            
+                  myServo.write(180); // move servo to 180 degrees
+                  delay(200); // wait 200 ms for the servo to get there  
+              }
+            }
+              
+
+      </code></pre>
+      <p><em> Based on my serial monitoring prints, I saw that when I did not touch 
+        the keys, the capacitive sensors raw output value ranged from 0-20. Whem I touched 
+        the keys, the output values ranged from 1500-2200. I wanted my servo motor to run 
+        when I touched the keys, so I set my code to run my motor if the value was greater than 1000, 
+        when I am guarantee touching the keys. 
+
+
+      <h2> Circuit in Action </h2>
+      <p> Here is a video of my circuit in action: </p>
+      <img src="libCircuit.gif" width="600" />
+      <p><em> 
+        Based on the way I coded my circuit, my servo motor will move to a 45 degree angle, and wait 20ms for the servo to get there, then the same process repeated for 
+        the motor to move to a a 90 degree angle, then to 125 degrees, and then 180 degrees if I am touching the keys. 
+        When the keys are untouched, the servo motor will not move. This is demonstrated
+        in the video above.
+      </em></p>
+
+      <h2> Additional Questions </h2>
+      <p> (1) Given the code provided in Question 1, draw a graph with the X axis in seconds, for two seconds, and the y-axis the voltage at pin 9 with respect to ground. </p> 
+      <img src="libGraph.png" />
+      <p> Calculations: </p>
+      <img src="libgraphcalc.png" />
+
+      <p> (2) If the input device is slightly broken, leading it to give us an erroneous reading 1% of the time, I would 
+        start a loop to continously check the sensor and take in readings from the capacitive sensor (for example, 7 times). 
+        Then, I would all up all the readings total and calculate the average reading by dividing the total by the 
+        number of readings.  In this case, I would divide my total by 7. Then, I would check if the average value 
+        greater than the touch threshold. In my case, the touch threshold was 1000. If no, then I would keep checking. 
+        If yes, than I would move on to code my motor to my desired positions. </p>
+      <p> (3) If my input device is slightly noisy, leading the measurement to randomly deviate from the true measurement up or down by 10%, I would 
+        start a loop to continuosly check the sensor and then create a list to store the last few readings.  
+        Then, I would take in a new reading from the capcitive sensor and add a new reading to the list. 
+        In the case if the list gets longer than my list size, then the oldest reading would get 
+         removed to keep the list size constant. Then, calculate the average of the list and check if the 
+         touch threshold is greater than 1000. If it is, then move forward and code motor to desired positions. 
+         If not, then keep checking for new readings. This process would be repeated to keep the data smooth and checking 
+         for the touches.  </p>
+
+
+  </body>
+</html>
