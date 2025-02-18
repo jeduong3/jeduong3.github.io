@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Jennifer Duong's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1> Jennifer's Assignment 5</h1>
+    <div class="header">
+
+    </div>
+
+      <h2> Schematics </h2>
+      <p> </p>
+      <img src="schema5.png" />
+      <p><em> My input sensor uses the library Capacitive Sensor. Pin 4 is my sending pin, and pin 2 is my recieving pin. I chose a 
+        1 megaohm resistor for my circuit because a higher resistor value 
+        would have imcreased the sensitivity of touch, and therefore can enable the circuit
+        to be noise sensitive as well. My circuit is dependent on human touching, so 
+        I chose a 1 megaohm resistor because it provides a good balance between sensitivity 
+        and noise. 
+      </em></p>
+
+      <h2> Circuit </h2>
+      <p> This was how I built my circuit: </p>
+        <img src="ledtrans.png" />
+      <p><em> As seen above, I used my metal keys for capacitive sensing. </em></p>
+
+      <h2> Firmware Code </h2>
+      <p> Below is the code I created to run my circuit: </p>
+      <pre><code>
+        // Include the library
+        #include <CapacitiveSensor.h>
+        
+        // Pin 2 is receiving pin, pin 4 is sending pin
+        // 1 megohm resistor between pins 4 & 2 
+        CapacitiveSensor   cs_4_2 = CapacitiveSensor(4,2); 
+        
+        const int led = 11; // led connected to pin 11
+        
+        void setup() {
+          pinMode(led, OUTPUT); // set led to OUTPUT
+          cs_4_2.set_CS_AutocaL_Millis(0xFFFFFFFF);  // turn off autocalibrate on channel 1
+          Serial.begin(9600); // serial communication 
+        }
+        
+        
+        void loop() {
+          long start = millis(); // recording the time in milliseconds
+          long total1 =  cs_4_2.capacitiveSensor(30); // reading capacitives sensor 
+        
+          Serial.print(millis() - start);  // check on performance (in milliseconds)
+          Serial.print("\t"); // tab character for spacing in serial monitor
+        
+          Serial.println(total1); // print capacitive sensors output value 
+          delay(50); // delay to limit data to serial port
+        
+          // if the reading is higher than 250 
+          // when touched, blink LED
+          if (total1 > 500) {
+             analogWrite(led, 255); // turn on LED to max brightness
+             delay(200);
+             analogWrite(led, 0); // turn off LED 
+            delay(200);
+          } else { // when not touched
+            analogWrite(led, 0); // LED is off 
+            
+          }
+        }    
+            
+            
+          
+      </code></pre>
+      <p><em> Based on my serial monitoring prints, I saw that when I did not touch 
+        the keys, the capacitive sensors raw output value ranged from 0-30. Whem I touched 
+        the keys, the output values ranged from 1500-2200. I wanted the LED lights to blink 
+        when I touched the keys, so I set my code to blink the LEDs if the value was greater than 500, 
+        when I am guarantee touching the keys. When not touching the keys, the LED is set to be turned off. 
+
+
+      <h2> Circuit in Action </h2>
+      <p> Here is a video of my circuit in action: </p>
+      <img src="led5.gif" width="600" />
+      <p><em> 
+        Based on the way I coded my circuit, the LED will begin blinking 
+        when I touch my keys. When untouched, the LEDs will remain off. This is demonstrated
+        in the video above.
+      </em></p>
+
+      <h2> Additional Questions </h2>
+      <p> (1) The absolute maximum amount of current between pins 2 and 3 for a continuous drain current is 37.2 
+           for Tc +25 degrees C, and 29.8A for Tc +100 degrees C. The absolute maximum amount of current between
+           pins 2 and 3 for a pulsed drain current is 80A.</p> 
+      <p> (2) </p>
+      <img src="q2a5.png" />
+      <p> (3) Psuedo Code 
+        <pre><code>
+
+        // First, I will start by defining the motor control pins
+        const int enableA = 9;
+        const int enableB = 10;
+        const int motorA1 = 8;
+        const int motorA2 = 7;
+        const int motorB1 = 6;
+        const int motorB2 = 5;
+
+        void setup() {
+        // Then, set pins as outputs
+        pinMode(enableA, OUTPUT);
+        pinMode(enableB, OUTPUT);
+        pinMode(motorA1, OUTPUT);
+        pinMode(motorA2, OUTPUT);
+        pinMode(motorB1, OUTPUT);
+        pinMode(motorB2, OUTPUT);
+
+        // Motors must be kept at HIGH in order to work
+        digitalWrite(enableA, HIGH);
+        digitalWrite(enableB, HIGH);
+        }
+
+        void loop() {
+        // Moving both motors forward
+        digitalWrite(motorA1, HIGH);
+        digitalWrite(motorA2, LOW);
+        digitalWrite(motorB1, HIGH);
+        digitalWrite(motorB2, LOW);
+        delay(2000);
+
+        // Moving both motors backward
+        digitalWrite(motorA1, LOW);
+        digitalWrite(motorA2, HIGH);
+        digitalWrite(motorB1, LOW);
+        digitalWrite(motorB2, HIGH);
+        delay(2000);
+
+        // Moving one forward, and one backwards
+        digitalWrite(motorA1, HIGH);
+        digitalWrite(motorA2, LOW);
+        digitalWrite(motorB1, LOW);
+        digitalWrite(motorB2, HIGH);
+        delay(2000);
+
+        // Moving one backwards,and one forward
+        digitalWrite(motorA1, LOW);
+        digitalWrite(motorA2, HIGH);
+        digitalWrite(motorB1, HIGH);
+        digitalWrite(motorB2, LOW);
+        delay(2000);
+        }
+    </code>
+ </p>
+ <img src="q3a5.png" />
+
+
+  </body>
+</html>
