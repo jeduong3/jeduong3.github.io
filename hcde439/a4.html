@@ -9,7 +9,7 @@
     <link href="style.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-    <h1> Jennifer's Assignment 3</h1>
+    <h1> Jennifer's Assignment 4</h1>
     <div class="header">
 
     </div>
@@ -103,23 +103,49 @@
       <h2> Additional Questions </h2>
       <p> (1) Given the code provided in Question 1, draw a graph with the X axis in seconds, for two seconds, and the y-axis the voltage at pin 9 with respect to ground. </p> 
       <img src="libGraph.png" />
-      <p> Calculations: </p>
-      <img src="libgraphcalc.png" />
 
-      <p> (2) If the input device is slightly broken, leading it to give us an erroneous reading 1% of the time, I would 
-        start a loop to continously check the sensor and take in readings from the capacitive sensor (for example, 7 times). 
-        Then, I would all up all the readings total and calculate the average reading by dividing the total by the 
-        number of readings.  In this case, I would divide my total by 7. Then, I would check if the average value 
-        greater than the touch threshold. In my case, the touch threshold was 1000. If no, then I would keep checking. 
-        If yes, than I would move on to code my motor to my desired positions. </p>
+      <p> (2) To mitigate the 1% error, I will take five readings and return the median value, 
+          minimizing the influence of outliers and reducing the impact of extreme values. </p>
+        <pre><code>
+          long SensorValue() {
+            long sensorVal[5]; // store 5 sensor readings
+        
+            for (int index = 0; index < 5; index++) {
+                sensorVal[index] = cs_4_2.capacitiveSensor(30); // read sensor multiple times
+                delay(10);
+            }
+        
+            // Sort array and return median
+            for (int outer = 0; outer < 4; outer++) {
+                for (int inner = outer + 1; inner < 5; inner++) {
+                    if (sensorVal[outer] > sensorVal[inner]) {
+                        long tempValue = sensorVal[outer];
+                        sensorVal[outer] = sensorVal[inner];
+                        sensorVal[inner] = tempValue;
+                    }
+                }
+            }
+            return sensorVal[2]; // median value
+        }
+        </code></pre>
       <p> (3) If my input device is slightly noisy, leading the measurement to randomly deviate from the true measurement up or down by 10%, I would 
-        start a loop to continuosly check the sensor and then create a list to store the last few readings.  
-        Then, I would take in a new reading from the capcitive sensor and add a new reading to the list. 
-        In the case if the list gets longer than my list size, then the oldest reading would get 
-         removed to keep the list size constant. Then, calculate the average of the list and check if the 
-         touch threshold is greater than 1000. If it is, then move forward and code motor to desired positions. 
-         If not, then keep checking for new readings. This process would be repeated to keep the data smooth and checking 
-         for the touches.  </p>
+          take 10 readings and return the average, smoothing out any fluctuations. 
+      </p>
+
+         <pre><code>
+          long SensorValue() {
+            long readings[10]; // store 10 readings
+            long sum = 0; 
+        
+            for (int i = 0; i < 10; i++) { // take 10 readings
+                readings[i] = cs_4_2.capacitiveSensor(30); // read sensor multiple times
+                sum += readings[i];
+                delay(5);  
+            }
+        
+            return sum/10; // return the average value 
+        }
+         </code></pre>
 
 
   </body>
