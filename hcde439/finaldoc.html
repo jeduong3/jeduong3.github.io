@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Jennifer Duong's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1> Jennifer's Final Project - Clap Night Lamp </h1>
+    <div class="header">
+
+    </div>
+
+    <h2> Concept </h2>
+    <br>
+    <p> This project is a clap-activated smart lamp that 
+        responds to claps to control its brightness. The lamp 
+        is designed to provide convenient, hands-free lighting control, 
+        making it useful for turning off your lights for sleep without
+        having to get out of bed.  </p>
+
+
+    <br>
+    <p> The brightness levels follow a sequential pattern </p>
+    <br>
+
+    <p> First clap: Turns the lamp ON at full brightness </p>
+    <br>
+    <p> Second clap: Dims the brightness </p>
+    <br>
+    <p> Third clap: Further dims the brightness</p>
+    <br>
+    <p> Fourth clap: Turns the lamp OFF</p>
+
+    <br>
+    <h2> Technical Implementation </h2>
+    <br>
+    <p> The main key components of the lamp uses an Arduino, a MOSFET transistor, a sound sensor module, 
+        and a 12V LED strips to achieve the clap activated brightness control. </p>
+        <br>
+        <p> The Arduino is powered by a 9V battery. The LED strips require a higher voltage and was powered separately by a 12V power supply. 
+            The sound sensor module was used to detect loud claps and then it sent a digital signal to the Arduino.
+            The Arduino then processes the sensor's input and cycles through the four brightness levels with each detected clap. The MOSFET transistor 
+            was used as an electronic switch to control the LED brightness. The Arduino sends PWM signals to adjust the brightness levels accordingly. 
+            The Serial Monitor was also used to observe sensor readings and adjust the noise sensitivity threshold to
+            ensure the lamp accurately detects claps. </p>
+
+        <br>
+    <h2> How it was built into a lamp: </h2>
+    <br>
+    <p> To create the lamp structure, the LED strips were taped inside a big round plastic container to distribute light evenly
+        and hold the lamp structure. Paper was then used to tape around the outside of the clear plastic container to create a 
+        soft lighting effect and hide the LED strip lights that are beneath. Cardboard was used for additional structural support 
+        and hiding the breadboard and circuits on the base of the lamp. The circuit also included alligator clips and wires, which 
+        were routed through the base to top and hidden to maintain the lamp appearance. </p>
+        <br>
+        <img src="lampic2.png" />
+    
+        <br>
+      <h2> Circuit </h2>
+      <p> This was how I built my circuit. </p>
+      <br>
+        <img src="clapcircuit.png" />
+        <br>
+      <p> The circuit picture was taken before finalizing the product and assembling everything. 
+        I realized I forgot to capture an image of the circuit before putting the lamp together. 
+        The only difference between the circuit shown above and my schematic is the connection of the 
+        sound sensor module. In the circuit image, the sensor is connected to analog pin A0, but I 
+        actually used digital pin 2 instead, as it provided a more responsive and reliable response. The schematic below accurately 
+        reflects this change, showing the sensor connected to digital pin 2.
+      </p>
+
+
+      <br>
+      <h2> Schematic </h2>
+      <img src="clapschem.png" />
+      <p> As mentioned earlier, my schematic shows the sound sensor module connected to pin 2,
+         which is the configuration I used to operate the lamp. </p>
+      
+         <br>
+
+      <h2> Firmware Code </h2>
+      <p> Below is the firmware code to run my circuit: </p>
+      <pre><code>
+int soundSensor = 2; // sound sensor connected to pin 2
+int LED = 11; // mosfet connected to pin 11 
+
+// 0 = off
+// 1 = full brightness
+// 2 = dimmed
+// 3 = dimmed more
+int brightnessLevel = 0; // start brightness at 0
+
+unsigned long lastTriggerTime = 0; // stores the timestamp (in milliseconds) of the last detected clap
+const int debounceDelay = 250;  // ignore claps within 250ms to prevent flickering
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(soundSensor, INPUT); //  sound sensor input 
+    pinMode(LED, OUTPUT); // led output 
+    analogWrite(LED, 0); // LED strip starts OFF
+}
+
+void loop() {
+    static int lastSensorState = LOW;  // stores previous sensor state
+    int sensorData = digitalRead(soundSensor); // read raw sensor data
+    unsigned long currentTime = millis(); // store current time
+
+    // detects a new clap (from low to high) and apply debounce to prevent flickering of claps within 250ms
+    if (sensorData == HIGH && lastSensorState == LOW && (currentTime - lastTriggerTime > debounceDelay)) { 
+        lastTriggerTime = currentTime; // update last detected clap timestamp
+
+        // cycle through brightness levels
+        // brightnessLevel + 1 increases the brightness level by 1 each time a clap is detected
+        // % 3 (modulus operator) ensures the value always stays within 0, 1, 2, 3 and then loops back to 0
+        brightnessLevel = (brightnessLevel + 1) % 4;
+
+        if (brightnessLevel == 1) { // first clap is ON at full brightness
+            analogWrite(LED, 255);
+            Serial.println("Full Brightness");
+        } else if (brightnessLevel == 2) { // second clap is dimmed by 100
+            analogWrite(LED, 155);
+            Serial.println("Strip dimmed 1");
+        } else if (brightnessLevel == 3) { // third clap is dimmed even further by 100 
+            analogWrite(LED, 55);
+            Serial.println("Strip dimmed 2");
+        } else if (brightnessLevel == 0) { // fourth clap is OFF
+            analogWrite(LED, 0);
+            Serial.println("LED off");
+        }
+    }
+
+    lastSensorState = sensorData;  // store last sensor state
+}
+ 
+      </code></pre>
+
+      <p> The firmware code listens for clap inputs from the sound sensor and cycles through four brightness 
+        levels using PWM signals. A debounce mechanism was also used to prevent false triggers from background noise or echos from claps. 
+        The brightness increments with each clap and resets after the fourth clap.</p>
+
+        <br>
+      <h2> Circuit in Action </h2>
+      <p> Video of circuit in action: </p>
+      <br>
+      <img src="clap.gif" width="600" />
+      <br>
+      <p> On the first clap, the lights turn on at full brightness (at 255). On the second clap,
+        the lights dim (at 155). On the third clap, the lights dim even further (at 55). And lastly, 
+        on the fourth clap, the lights turn completely off (at 0). This cycle will repeat for the four claps. 
+      </p>
+
+
+
+  </body>
+</html>
